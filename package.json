@@ -2,6 +2,9 @@
   "name": "profit-calculator",
   "version": "0.0.0",
   "license": "MIT",
+  "engines": {
+    "node": "12.16.x"
+  },
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
