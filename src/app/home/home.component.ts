@@ -31,13 +31,10 @@ export class HomeComponent {
   }
 
   update() {
-    return;
-    this.chart.unload({
-      ids: ["stock price"]
-    });
-    this.chart.load({
-      columns: [["stock price", 30, 200, 100, 400, 150, 250]]
-    });
+    if (isNaN(this.stock) || isNaN(this.strike) || isNaN(this.option)) {
+      return null;
+    }
+    
   }
 
   get option100(): number {
