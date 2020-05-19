@@ -34,7 +34,8 @@ export class HomeComponent {
     if (isNaN(this.stock) || isNaN(this.strike) || isNaN(this.option)) {
       return null;
     }
-    
+    const x = [];
+    const y = [];
   }
 
   get option100(): number {
