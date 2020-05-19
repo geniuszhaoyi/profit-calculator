@@ -12,8 +12,10 @@ export class AppComponent {
   strike: number = NaN;
   option: number = NaN;
 
+  chart: any;
+
   ngAfterViewInit() {
-    let chart = c3.generate({
+    this.chart = c3.generate({
       bindto: "#chart",
       data: {
         columns: [
@@ -23,6 +25,8 @@ export class AppComponent {
       }
     });
   }
+
+  update() {}
 
   get option100(): number {
     return this.option * 100;
@@ -36,18 +40,21 @@ export class AppComponent {
   }
   set stockPrice(str: string) {
     this.stock = this.getNumber(str);
+    this.update();
   }
   get strikePrice(): string {
     return this.getString(this.strike);
   }
   set strikePrice(str: string) {
     this.strike = this.getNumber(str);
+    this.update();
   }
   get option100Price(): string {
     return this.getString(this.option100);
   }
   set option100Price(str: string) {
     this.option100 = this.getNumber(str);
+    this.update();
   }
 
   getString(num: number): string {
