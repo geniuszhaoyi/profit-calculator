@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { ChartAPI } from 'c3/index';
 
 import * as c3 from "c3";
 
@@ -12,7 +13,7 @@ export class HomeComponent {
   strike: number = NaN;
   option: number = NaN;
 
-  chart: any;
+  chart: ChartAPI;
 
   ngAfterViewInit() {
     this.chart = c3.generate({
@@ -22,10 +23,7 @@ export class HomeComponent {
         xs: {
           "stock price": 'x1',
         },
-        columns: [
-          ["x1", 30, 200, 100, 400, 150, 250],
-          ["stock price", 30, 200, 100, 400, 150, 250]
-        ]
+        columns: []
       }
     });
   }
@@ -34,8 +32,19 @@ export class HomeComponent {
     if (isNaN(this.stock) || isNaN(this.strike) || isNaN(this.option)) {
       return null;
     }
-    const x = [];
-    const y = [];
+    const x = [0, this.strike, this.strike * 2];
+    const y = [this.option - this.stock, this.strike + this.option - this.stock, this.strike + this.option - this.stock];
+    this.chart.unload({
+      ids: ["x1", "stock price"]
+    })
+    this.chart.load({
+      data: {
+        columns: [
+          ["x1", ...x],
+          ["stock price", ...y]
+        ]
+      }
+    })
   }
 
   get option100(): number {
