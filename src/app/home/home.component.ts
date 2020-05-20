@@ -101,6 +101,9 @@ export class HomeComponent implements OnInit {
       zoom: {
         enabled: true
       },
+      size: {
+        height: 480
+      },
       onrendered: () => {
         setTimeout(() => {
           this.mergeRapidEvent.done();
