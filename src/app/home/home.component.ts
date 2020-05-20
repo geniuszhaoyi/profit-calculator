@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ChartAPI, Primitive } from 'c3/index';
 
-import { BuyingStock, BuyingOption, getXs, getYs, Calculator, Idling } from '../ts/Calculator';
+import { BuyingStock, BuyingOption, BuyingStockSellingOption, getXs, getYs, Calculator, Idling } from '../ts/Calculator';
 
 import * as c3 from "c3";
 
@@ -54,8 +54,9 @@ export class HomeComponent implements OnInit {
 
   mergeRapidEvent: MergeRapidEvent = new MergeRapidEvent();
 
-  buyingStock = new BuyingStock(this.stock, 0, 0);
-  buyingOption = new BuyingOption(this.stock, this.strike, this.option);
+  buyingStock = new BuyingStock(0, 0, 0);
+  buyingStockSellingOption = new BuyingStockSellingOption(0, 0, 0);
+  buyingOption = new BuyingOption(0, 0, 0);
   idling = new Idling(0, 0, 0);
 
   chartData: Line[] = [
@@ -68,8 +69,12 @@ export class HomeComponent implements OnInit {
       model: this.buyingStock,
     },
     {
-      label: "sell covered option",
+      label: "buy option",
       model: this.buyingOption,
+    },
+    {
+      label: "sell covered option",
+      model: this.buyingStockSellingOption,
     },
   ]
 

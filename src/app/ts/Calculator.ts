@@ -55,6 +55,22 @@ export class BuyingOption extends Calculator {
     
     profit(price: number): number {
         if (price < this.strike) {
+            return -this.initOption;
+        } else {
+            return price - this.strike - this.initOption;
+        }
+    }
+
+    specialXs(): number[] {
+        return [this.strike];
+    }
+
+}
+
+export class BuyingStockSellingOption extends Calculator {
+    
+    profit(price: number): number {
+        if (price < this.strike) {
             return price + this.initOption - this.initPrice;
         } else {
             return this.initOption + this.strike - this.initPrice;
