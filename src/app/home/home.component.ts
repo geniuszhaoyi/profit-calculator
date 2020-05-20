@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { ChartAPI } from 'c3/index';
+import { ChartAPI, Primitive } from 'c3/index';
+
+import { BuyingStock, BuyingOption, getXs, getYs, Calculator, Idling } from '../ts/Calculator';
 
 import * as c3 from "c3";
 
@@ -25,6 +27,11 @@ class MergeRapidEvent {
 
 }
 
+class Line {
+  model: Calculator;
+  label: string;
+}
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -33,6 +40,7 @@ class MergeRapidEvent {
 export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
+    this.mergeRapidEvent.busy = true;
     this.stockPrice = this.getLocalStorage('stockPrice');
     this.strikePrice = this.getLocalStorage('strikePrice');
     this.optionPrice = this.getLocalStorage('optionPrice');
@@ -46,25 +54,38 @@ export class HomeComponent implements OnInit {
 
   mergeRapidEvent: MergeRapidEvent = new MergeRapidEvent();
 
-  x1: number[] = [];
-  x2: number[] = [];
-  y1: number[] = [];
-  y2: number[] = [];
+  buyingStock = new BuyingStock(this.stock, 0, 0);
+  buyingOption = new BuyingOption(this.stock, this.strike, this.option);
+  idling = new Idling(0, 0, 0);
+
+  chartData: Line[] = [
+    {
+      label: "0",
+      model: this.idling,
+    },
+    {
+      label: "buy stock",
+      model: this.buyingStock,
+    },
+    {
+      label: "sell covered option",
+      model: this.buyingOption,
+    },
+  ]
 
   ngAfterViewInit() {
+    const xs = {};
+    const columns: [string, ...Primitive[]][] = [['x']];
+    this.chartData.forEach(l => {
+      xs[l.label] = 'x';
+      columns.push([l.label]);
+    });
+
     this.chart = c3.generate({
       bindto: "#chart",
       data: {
-        xs: {
-          "sell option": 'x1',
-          "no option": 'x2',
-        },
-        columns: [
-          ["x1", ...this.x1],
-          ["sell option", ...this.y1],
-          ["x2", ...this.x2],
-          ["no option", ...this.y2]
-        ]
+        xs: xs,
+        columns: columns,
       },
       axis: {
         x: {
@@ -73,7 +94,18 @@ export class HomeComponent implements OnInit {
         y: {
             label: 'Profit'
         }
-      }
+      },
+      point: {
+        show: false
+      },
+      zoom: {
+        enabled: true
+      },
+      onrendered: () => {
+        setTimeout(() => {
+          this.mergeRapidEvent.done();
+        });
+      },
     });
   }
 
@@ -81,30 +113,23 @@ export class HomeComponent implements OnInit {
     if (isNaN(this.stock) || isNaN(this.strike) || isNaN(this.option)) {
       return null;
     }
-    this.x1 = [0, this.strike, this.strike * 2];
-    this.y1 = [this.option - this.stock, this.option + this.strike - this.stock, this.option + this.strike - this.stock];
-    this.x2 = [0, this.strike, this.strike * 2];
-    this.y2 = [-this.stock, this.strike - this.stock, this.strike * 2 - this.stock];
-    if (this.option + this.strike - this.stock > 0 && this.option - this.stock < 0) {
-      this.x1.push(this.stock - this.option);
-      this.y1.push(0);
-      this.x2.push(this.stock - this.option);
-      this.y2.push(this.stock - this.option - this.stock);
-    }
-    if (this.chart) {
-      this.mergeRapidEvent.run((done) => {
-        this.chart.load({
-          unload: true,
-          columns: [
-            ["x1", ...this.x1],
-            ["sell option", ...this.y1],
-            ["x2", ...this.x2],
-            ["no option", ...this.y2]
-          ],
-          done: () => done(),
-        });
+
+    this.chartData.forEach(cd => cd.model.update(this.stock, this.strike, this.option));
+
+    this.mergeRapidEvent.run((done) => {
+      const xs = getXs(this.chartData.map(l => l.model));
+
+      const columns: [string, ...Primitive[]][] = [['x', ...xs]];
+      this.chartData.forEach(l => {
+        columns.push([l.label, ...getYs(l.model, xs).map(v => Math.round(v * 100) / 100.0)]);
       });
-    }
+
+      this.chart.load({
+        unload: true,
+        columns: columns,
+        done: () => done(),
+      });
+    });
   }
 
   get stockPrice(): string {
